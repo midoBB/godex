@@ -1,0 +1,13 @@
+- [x] Get read status on each chapter
+- [x] Get to downloading the chapter images
+- [x] Zip the downloaded chapters to CBZ files
+- [x] Parametrize download directory
+- [x] Mark each downloaded chapter as read
+- [x] Save last downloaded at to make it as start point for next download/run
+- [x] Look for a way to download from MangaPlus
+- [x] Refactor the code
+- [ ] Download manga info in JSON format for each manga and save it in the accompanying folder
+- [ ] Have a manga local website server that temporarily unzips the CBZ when reading
+- [ ] Read on how to sync to Kobo
+- [ ] Try to integrate this [package](https://github.com/ciromattia/kcc) before syncing to make it match my e-reader
+- [ ] Prepare Synology package
