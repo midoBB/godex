@@ -1,31 +1,21 @@
 package config
 
 import (
+	"godex/pkg/mangadex"
 	"log"
 
 	"github.com/spf13/viper"
 )
 
-// EnvConfigs struct to map env values
-type EnvConfigs struct {
-	Username     string
-	Password     string
-	ClientId     string `mapstructure:"client_id"`
-	ClientSecret string `mapstructure:"client_secret"`
-	DownloadPath string `mapstructure:"download_path"`
-}
-
 // LoadEnvVariables loads the environment variables from the .env file
-func LoadEnvVariables() (*EnvConfigs, error) {
-	viper.AddConfigPath(".")
-	viper.SetConfigName(".env")
-	viper.SetConfigType("env")
+func LoadEnvFile(envFile string) (*mangadex.EnvConfigs, error) {
+	viper.SetConfigFile(envFile)
 
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, err
 	}
 
-	env := &EnvConfigs{}
+	env := &mangadex.EnvConfigs{}
 	if err := viper.Unmarshal(env); err != nil {
 		return nil, err
 	}

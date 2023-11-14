@@ -2,30 +2,58 @@ package config
 
 import (
 	"fmt"
+	"godex/pkg/util"
 	"log"
+	"os"
 	"time"
 
+	gap "github.com/muesli/go-app-paths"
 	"github.com/spf13/viper"
 )
 
 const (
-	timestampKey  = "timestamp"
-	timestampFile = ".timestamp"
+	timestampKey  = "last_ran_at"
+	timestampFile = "timestamp"
 )
 
+func timestampFileExists() (bool, error) {
+	scope := gap.NewScope(gap.User, "godex")
+	configPath, err := scope.DataPath(timestampFile)
+	if err != nil {
+		return false, err
+	}
+	_, err = os.Stat(configPath)
+	return err == nil, nil
+}
+
 func SaveTimestamp() error {
-	// Get the current time
+	scope := gap.NewScope(gap.User, "godex")
+	dataFile, err := scope.DataPath(timestampFile)
+	if err != nil {
+		return err
+	}
+
+	alreadyExists, err := timestampFileExists()
+	if err != nil {
+		return err
+	}
+	if !alreadyExists {
+		err = util.CreateFileAndDir(dataFile)
+		if err != nil {
+			return err
+		}
+	}
 	now := time.Now()
 
 	// Initialize Viper
 	v := viper.New()
-	v.SetConfigType("ini")
+	v.SetConfigType("json")
 
 	// Set the timestamp value
 	v.Set(timestampKey, now.Format(time.RFC3339))
 
 	// Write the configuration to file
-	err := v.WriteConfigAs(timestampFile)
+	err = v.WriteConfigAs(dataFile)
 	if err != nil {
 		return fmt.Errorf("error saving timestamp: %v", err)
 	}
@@ -34,12 +62,18 @@ func SaveTimestamp() error {
 }
 
 func LoadTimestamp() (time.Time, error) {
+	scope := gap.NewScope(gap.User, "godex")
+	dataFile, err := scope.DataPath(timestampFile)
+	if err != nil {
+		return time.Now(), err
+	}
 	// Initialize Viper
 	v := viper.New()
-	v.SetConfigType("ini")
+	v.SetConfigFile(dataFile)
+	v.SetConfigType("json")
 
 	// Read the configuration file
-	err := v.ReadInConfig()
+	err = v.ReadInConfig()
 	if err != nil {
 		return time.Now().AddDate(0, 0, -7), nil
 	}

@@ -4,31 +4,34 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"godex/pkg/config"
 	"log"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/google/uuid"
 	"golang.org/x/sync/errgroup"
 )
 
 const (
 	loginEndpoint    = "https://auth.mangadex.org/realms/mangadex/protocol/openid-connect/token"
-	followedEndpoint = "https://api.mangadex.org/user/follows/manga/feed?translatedLanguage[]=en&includes[]=manga&includes[]=user&order[readableAt]=desc&createdAtSince=%v"
+	followedEndpoint = "https://api.mangadex.org/user/follows/manga/feed?translatedLanguage[]=en&includes[]=manga&order[readableAt]=desc&createdAtSince=%v"
 	getReadEndpoint  = "https://api.mangadex.org/manga/read/?ids[]=%v"
 	setReadEndpoint  = "https://api.mangadex.org/manga/%v/read"
+	chapterEndpoint  = "https://api.mangadex.org/chapter"
 )
 
 type Client struct {
 	restyClient *resty.Client
-	env         *config.EnvConfigs
+	cfg         *Config
 	authToken   string
 }
 
-func NewClient(env *config.EnvConfigs, restyClient *resty.Client) *Client {
+func NewClient(cfg *Config, restyClient *resty.Client) *Client {
 	return &Client{
 		restyClient: restyClient,
-		env:         env,
+		cfg:         cfg,
 	}
 }
 
@@ -42,16 +45,16 @@ func (c *Client) Login(ctx context.Context) (*LoginResponse, error) {
 	_, err := c.restyClient.R().SetContext(ctx).SetResult(loginResult).
 		SetFormData(map[string]string{
 			"grant_type":    "password",
-			"username":      c.env.Username,
-			"password":      c.env.Password,
-			"client_id":     c.env.ClientId,
-			"client_secret": c.env.ClientSecret,
+			"username":      c.cfg.Username,
+			"password":      c.cfg.Password,
+			"client_id":     c.cfg.ClientId,
+			"client_secret": c.cfg.ClientSecret,
 		}).
 		Post(loginEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("login request failed: %v", err)
 	}
-	log.Printf("Logged in successfully as %v \n", c.env.Username)
+	log.Printf("Logged in successfully as %v \n", c.cfg.Username)
 	return loginResult, nil
 }
 
@@ -157,4 +160,77 @@ func (c *Client) MarkMangaAsRead(ctx context.Context, mangaId string, chaptersTo
 		SetBody(jsonPayload).
 		Post(fmt.Sprintf(setReadEndpoint, mangaId))
 	return err
+}
+
+func (c *Client) GetMangaChapters(ctx context.Context, mangaUrl string) (*GodexManga, error) {
+	id, err := extractMangaId(mangaUrl)
+	if err != nil {
+		return nil, err
+	}
+	var chapters []*Chapter
+	offset := 0
+	limit := 100
+
+	for {
+		chapterList := &ChapterList{}
+		_, err := c.restyClient.R().SetContext(ctx).SetAuthToken(c.authToken).
+			SetQueryParams(map[string]string{
+				"limit":                fmt.Sprintf("%d", limit),
+				"offset":               fmt.Sprintf("%d", offset),
+				"manga":                id,
+				"translatedLanguage[]": "en",
+				"includes[]":           "manga",
+			}).
+			SetResult(chapterList).
+			Get(chapterEndpoint)
+		if err != nil {
+			return nil, err
+		}
+
+		chapters = append(chapters, chapterList.Data...)
+
+		if len(chapters) >= chapterList.Total {
+			break
+		}
+		offset += limit
+	}
+	if len(chapters) == 0 {
+		return nil, fmt.Errorf("no chapters found available for the requested manga")
+	}
+	godexChapters := make([]*GodexChapter, len(chapters))
+	for i, chapter := range chapters {
+		godexChapters[i] = &GodexChapter{
+			Chapter: chapter,
+			IsRead:  false,
+		}
+	}
+	return &GodexManga{
+		Manga:    chapters[0].GetManga(),
+		Chapters: godexChapters,
+	}, nil
+}
+
+func extractMangaId(mangaUrl string) (string, error) {
+	u, err := url.Parse(mangaUrl)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse URL: %w", err)
+	}
+
+	path := u.Path
+	segments := strings.Split(path, "/")
+
+	// Check if the UUID exists
+	if len(segments) < 3 {
+		return "", fmt.Errorf("UUID not found in URL")
+	}
+
+	uuidStr := segments[2]
+
+	// Parse the UUID
+	_, err = uuid.Parse(uuidStr)
+	if err != nil {
+		return "", fmt.Errorf("invalid UUID: %w", err)
+	}
+
+	return uuidStr, nil
 }

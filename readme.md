@@ -7,7 +7,7 @@ Godex is a Go program designed to download unread manga from the follow feed of 
 -   Build the Program:
 
 ```bash
-go build -o godex cmd/godex/main.go
+go build -o godex main.go
 ```
 
 -   Move the Executable

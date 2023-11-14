@@ -118,6 +118,28 @@ func CreateChapterDir(mangaDir string, chapter *mangadex.Chapter) (string, error
 
 func CheckChapterAlreadyExists(mangaDir string, chapterNumber string) bool {
 	chapterFolderPath := filepath.Join(mangaDir, chapterNumber)
-	_, err := os.Stat(chapterFolderPath + ".cbz")
+	return CheckFileExists(chapterFolderPath + ".cbz")
+}
+
+func CheckFileExists(path string) bool {
+	_, err := os.Stat(path)
 	return err == nil
+}
+
+func CreateFileAndDir(filename string) error {
+	// Create the parent directory if it doesn't exist
+	dir := filepath.Dir(filename)
+	err := os.MkdirAll(dir, 0755)
+	if err != nil {
+		return err
+	}
+
+	// Create the file
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	return nil
 }

@@ -7,6 +7,23 @@ import (
 	"fmt"
 )
 
+// EnvConfigs struct to map env values
+type EnvConfigs struct {
+	Username     string
+	Password     string
+	ClientId     string `mapstructure:"client_id"`
+	ClientSecret string `mapstructure:"client_secret"`
+	DownloadPath string `mapstructure:"download_path"`
+}
+
+type Config struct {
+	Username     string
+	Password     string
+	ClientId     string
+	ClientSecret string
+	DownloadPath string
+}
+
 type LoginResponse struct {
 	AccessToken string `json:"access_token"`
 }
@@ -16,6 +33,7 @@ type Manga struct {
 	Type       string          `json:"type"`
 	Attributes MangaAttributes `json:"attributes"`
 }
+
 type ChapterList struct {
 	Result   string     `json:"result"`
 	Response string     `json:"response"`

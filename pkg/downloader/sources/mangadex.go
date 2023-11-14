@@ -51,7 +51,7 @@ func (m *Mangadex) DownloadChapterImages(ctx context.Context, httpClient *resty.
 		go func(i int, url, dataSaverUrl string) {
 			defer func() { <-semaphore }() // release the token
 
-			if err := m.downloadImage(ctx, chapterDir, url, dataSaverUrl, i); err != nil {
+			if err := m.downloadImage(ctx, httpClient, chapterDir, url, dataSaverUrl, i); err != nil {
 				cancel() // cancel the context on error
 			}
 		}(i, url, dataSaverUrl)
@@ -68,10 +68,9 @@ func (m *Mangadex) DownloadChapterImages(ctx context.Context, httpClient *resty.
 // It first attempts to download the image at the provided URL.
 // If the download fails, it removes the partially downloaded file and then attempts to download the dataSaver version of the image.
 // This function returns an error if it fails to download either version of the image.
-func (m *Mangadex) downloadImage(ctx context.Context, chapterDir, url, dataSaverUrl string, page int) error {
+func (m *Mangadex) downloadImage(ctx context.Context, httpClient *resty.Client, chapterDir, url, dataSaverUrl string, page int) error {
 	filePath := chapterDir + "/" + strconv.Itoa(page) + filepath.Ext(url)
-	client := resty.New()
-	_, err := client.R().
+	_, err := httpClient.R().
 		SetContext(ctx).
 		SetOutput(filePath).
 		Get(url)
@@ -83,7 +82,7 @@ func (m *Mangadex) downloadImage(ctx context.Context, chapterDir, url, dataSaver
 	if err != nil {
 		return err
 	}
-	_, err = client.R().
+	_, err = httpClient.R().
 		SetContext(ctx).
 		SetOutput(filePath).
 		Get(url)

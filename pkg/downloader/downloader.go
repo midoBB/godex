@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"godex/pkg/config"
 	"godex/pkg/downloader/sources"
 	"godex/pkg/mangadex"
 	"godex/pkg/util"
@@ -16,13 +15,13 @@ import (
 
 type Downloader struct {
 	httpClient *resty.Client
-	env        *config.EnvConfigs
+	cfg        *mangadex.Config
 }
 
-func NewDownloader(env *config.EnvConfigs, httpClient *resty.Client) *Downloader {
+func NewDownloader(cfg *mangadex.Config, httpClient *resty.Client) *Downloader {
 	return &Downloader{
 		httpClient: httpClient,
-		env:        env,
+		cfg:        cfg,
 	}
 }
 
@@ -35,7 +34,7 @@ var downloadSources = []sources.Source{
 // It takes a context, an authentication token, and a list of manga
 // It returns an error if any operation fails.
 func (d *Downloader) DownloadManga(ctx context.Context, mangaList []*mangadex.GodexManga, mangadexClient *mangadex.Client) error {
-	err := util.CreateDownloadDir(d.env.DownloadPath)
+	err := util.CreateDownloadDir(d.cfg.DownloadPath)
 	if err != nil {
 		return err
 	}
@@ -47,7 +46,7 @@ func (d *Downloader) DownloadManga(ctx context.Context, mangaList []*mangadex.Go
 			return ctx.Err()
 		default:
 			log.Printf("Downloading manga: %v", manga.Manga.Attributes.Title.Values["en"])
-			mangaDir, err := util.CreateMangaDir(d.env.DownloadPath, manga)
+			mangaDir, err := util.CreateMangaDir(d.cfg.DownloadPath, manga)
 			chaptersToMarkAsRead := make([]string, 0)
 			if err != nil {
 				errs = append(errs, fmt.Sprintf("failed to create manga directory: %v", err))
@@ -77,7 +76,7 @@ func (d *Downloader) DownloadManga(ctx context.Context, mangaList []*mangadex.Go
 	}
 
 	if len(errs) > 0 {
-		return errors.New(strings.Join(errs, ", "))
+		return errors.New(strings.Join(errs, "\n"))
 	}
 	return nil
 }
@@ -102,5 +101,5 @@ func (d *Downloader) downloadChapter(ctx context.Context, mangaDir string, chapt
 			return true, util.CreateCBZ(chapterDir)
 		}
 	}
-	return false, fmt.Errorf("cannot download chapter %v : unknown source %s", actualChapter.Attributes.Chapter, *actualChapter.Attributes.ExternalURL)
+	return false, fmt.Errorf("cannot download chapter %v : unknown source %s", *actualChapter.Attributes.Chapter, *actualChapter.Attributes.ExternalURL)
 }
