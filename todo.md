@@ -6,7 +6,7 @@
 - [x] Save last downloaded at to make it as start point for next download/run
 - [x] Look for a way to download from MangaPlus
 - [x] Refactor the code
-- [ ] Have a way to prompt user for env info
+- [x] Have a way to prompt user for env info
 - [ ] Download manga info in JSON format for each manga and save it in the accompanying folder
 - [ ] Have a manga local website server that temporarily unzips the CBZ when reading
 - [ ] Read on how to sync to Kobo
