@@ -66,7 +66,7 @@ func CreateCBZ(chapterDir string) error {
 	defer zipWriter.Close()
 
 	for _, file := range files {
-		fileToZip, err := os.Open(chapterDir + "/" + file.Name())
+		fileToZip, err := os.Open(filepath.Join(chapterDir, file.Name()))
 		if err != nil {
 			return fmt.Errorf("failed to open file: %w", err)
 		}
