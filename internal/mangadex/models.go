@@ -28,10 +28,16 @@ type LoginResponse struct {
 	AccessToken string `json:"access_token"`
 }
 
+type MangaResponse struct {
+	Result   string `json:"result"`
+	Response string `json:"response"`
+	Data     Manga  `json:"data"`
+}
 type Manga struct {
-	ID         string          `json:"id"`
-	Type       string          `json:"type"`
-	Attributes MangaAttributes `json:"attributes"`
+	ID            string          `json:"id"`
+	Type          string          `json:"type"`
+	Attributes    MangaAttributes `json:"attributes"`
+	Relationships []Relationship  `json:"relationships"`
 }
 
 type ChapterList struct {
@@ -104,6 +110,20 @@ type Relationship struct {
 	Type       string      `json:"type"`
 	Attributes interface{} `json:"attributes"`
 }
+type CoverArt struct {
+	ID         string             `json:"id"`
+	Type       string             `json:"type"`
+	Attributes CoverArtAttributes `json:"attributes"`
+}
+type CoverArtAttributes struct {
+	Description string `json:"description"`
+	Volume      string `json:"volume"`
+	FileName    string `json:"fileName"`
+	Locale      string `json:"locale"`
+	CreatedAt   string `json:"createdAt"`
+	UpdatedAt   string `json:"updatedAt"`
+	Version     int64  `json:"version"`
+}
 
 func (a *Relationship) UnmarshalJSON(data []byte) error {
 	// Check for the type of the relationship, then unmarshal accordingly.
@@ -120,6 +140,8 @@ func (a *Relationship) UnmarshalJSON(data []byte) error {
 	switch typ.Type {
 	case "manga":
 		a.Attributes = &MangaAttributes{}
+	case "cover_art":
+		a.Attributes = &CoverArtAttributes{}
 	default:
 		a.Attributes = &json.RawMessage{}
 	}
@@ -171,6 +193,21 @@ func (c *Chapter) GetManga() *Manga {
 		}
 	}
 	return manga
+}
+
+func (m *Manga) GetCover() *CoverArt {
+	var coverArt *CoverArt
+	for _, rel := range m.Relationships {
+		if rel.Type == "cover_art" {
+			coverAttr, _ := rel.Attributes.(*CoverArtAttributes)
+			coverArt = &CoverArt{
+				ID:         rel.ID,
+				Type:       rel.Type,
+				Attributes: *coverAttr,
+			}
+		}
+	}
+	return coverArt
 }
 
 // ChapterReadMarkers : A response for getting a list of read chapters.

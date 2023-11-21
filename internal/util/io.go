@@ -143,3 +143,7 @@ func CreateFileAndDir(filename string) error {
 
 	return nil
 }
+
+func MangaCoverExists(mangaDir string) bool {
+	return CheckFileExists(filepath.Join(mangaDir, "cover.jpg"))
+}

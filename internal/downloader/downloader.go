@@ -8,6 +8,7 @@ import (
 	"godex/internal/mangadex"
 	"godex/internal/util"
 	"log"
+	"path/filepath"
 	"strings"
 
 	"github.com/go-resty/resty/v2"
@@ -51,6 +52,13 @@ func (d *Downloader) DownloadManga(ctx context.Context, mangaList []*mangadex.Go
 			if err != nil {
 				errs = append(errs, fmt.Sprintf("failed to create manga directory: %v", err))
 				continue
+			}
+			if !util.MangaCoverExists(mangaDir) {
+				err := d.downloadCover(ctx, mangadexClient, mangaDir, manga)
+				if err != nil {
+					errs = append(errs, fmt.Sprintf("failed to download manga cover: %v", err))
+					continue
+				}
 			}
 			for _, chapter := range manga.Chapters {
 				downloaded, err := d.downloadChapter(ctx, mangaDir, chapter)
@@ -102,4 +110,22 @@ func (d *Downloader) downloadChapter(ctx context.Context, mangaDir string, chapt
 		}
 	}
 	return false, fmt.Errorf("cannot download chapter %v : unknown source %s", *actualChapter.Attributes.Chapter, *actualChapter.Attributes.ExternalURL)
+}
+
+func (d *Downloader) downloadCover(
+	ctx context.Context,
+	mangadexClient *mangadex.Client,
+	mangaDir string,
+	manga *mangadex.GodexManga,
+) error {
+	coverUrl, err := mangadexClient.GetMangaCover(ctx, manga.Manga.ID)
+	if err != nil {
+		return err
+	}
+	imagePath := filepath.Join(mangaDir, "cover.jpg")
+	_, err = d.httpClient.R().
+		SetContext(ctx).
+		SetOutput(imagePath).
+		Get(coverUrl)
+	return err
 }

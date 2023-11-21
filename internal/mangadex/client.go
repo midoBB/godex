@@ -20,6 +20,8 @@ const (
 	getReadEndpoint  = "https://api.mangadex.org/manga/read/?ids[]=%v"
 	setReadEndpoint  = "https://api.mangadex.org/manga/%v/read"
 	chapterEndpoint  = "https://api.mangadex.org/chapter"
+	mangaEndpoint    = "https://api.mangadex.org/manga/%v?translatedLanguage[]=en&includes[]=cover_art"
+	coverEndpoint    = "https://uploads.mangadex.org/covers/%v/%v"
 )
 
 type Client struct {
@@ -97,6 +99,16 @@ func (c *Client) GetFollowedMangaFeed(ctx context.Context, lastRanAt time.Time) 
 	}
 	log.Println("Got followed manga feed successfully")
 	return mangaList, nil
+}
+
+func (c *Client) GetMangaCover(ctx context.Context, mangaID string) (string, error) {
+	mangaResp := &MangaResponse{}
+	_, err := c.restyClient.R().
+		SetContext(ctx).SetResult(mangaResp).SetAuthToken(c.authToken).Get(fmt.Sprintf(mangaEndpoint, mangaID))
+	if err != nil {
+		return "", fmt.Errorf("can't get manga cover: %v", err)
+	}
+	return fmt.Sprintf(coverEndpoint, mangaID, mangaResp.Data.GetCover().Attributes.FileName), nil
 }
 
 // filterAlreadyRead Filters out any chapters that are marked as read to not redownload them.

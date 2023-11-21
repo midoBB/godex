@@ -69,22 +69,22 @@ func (m *Mangadex) DownloadChapterImages(ctx context.Context, httpClient *resty.
 // If the download fails, it removes the partially downloaded file and then attempts to download the dataSaver version of the image.
 // This function returns an error if it fails to download either version of the image.
 func (m *Mangadex) downloadImage(ctx context.Context, httpClient *resty.Client, chapterDir, url, dataSaverUrl string, page int) error {
-	filePath := chapterDir + "/" + strconv.Itoa(page) + filepath.Ext(url)
+	imagePath := filepath.Join(chapterDir, strconv.Itoa(page)+filepath.Ext(url))
 	_, err := httpClient.R().
 		SetContext(ctx).
-		SetOutput(filePath).
+		SetOutput(imagePath).
 		Get(url)
 	if err == nil {
 		return nil
 	}
 	// if we can't download the full quality image, just download the dataSaver version
-	err = os.Remove(filePath)
+	err = os.Remove(imagePath)
 	if err != nil {
 		return err
 	}
 	_, err = httpClient.R().
 		SetContext(ctx).
-		SetOutput(filePath).
+		SetOutput(imagePath).
 		Get(url)
 	return err
 }
