@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"godex/pkg/mangadex"
+	"godex/internal/mangadex"
 	"io"
 	"net/http"
 	"os"

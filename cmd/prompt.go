@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"godex/pkg/config"
-	"godex/pkg/tui"
+	"godex/internal/config"
+	"godex/internal/tui"
 	"log"
 
 	tea "github.com/charmbracelet/bubbletea"

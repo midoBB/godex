@@ -1,8 +1,8 @@
 package config
 
 import (
-	"godex/pkg/mangadex"
-	"godex/pkg/util"
+	"godex/internal/mangadex"
+	"godex/internal/util"
 	"log"
 	"os"
 

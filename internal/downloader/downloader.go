@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"godex/pkg/downloader/sources"
-	"godex/pkg/mangadex"
-	"godex/pkg/util"
+	"godex/internal/downloader/sources"
+	"godex/internal/mangadex"
+	"godex/internal/util"
 	"log"
 	"strings"
 

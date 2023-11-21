@@ -3,9 +3,9 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"godex/pkg/config"
-	"godex/pkg/downloader"
-	"godex/pkg/mangadex"
+	"godex/internal/config"
+	"godex/internal/downloader"
+	"godex/internal/mangadex"
 	"log"
 	"os"
 

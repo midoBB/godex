@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"godex/pkg/util"
+	"godex/internal/util"
 	"log"
 	"os"
 	"time"

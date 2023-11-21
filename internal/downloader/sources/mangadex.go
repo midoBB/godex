@@ -3,7 +3,7 @@ package sources
 import (
 	"context"
 	"fmt"
-	"godex/pkg/mangadex"
+	"godex/internal/mangadex"
 	"os"
 	"path/filepath"
 	"strconv"

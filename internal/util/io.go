@@ -3,7 +3,7 @@ package util
 import (
 	"archive/zip"
 	"fmt"
-	"godex/pkg/mangadex"
+	"godex/internal/mangadex"
 	"io"
 	"log"
 	"os"

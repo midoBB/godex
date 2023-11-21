@@ -2,7 +2,7 @@ package tui
 
 import (
 	"fmt"
-	"godex/pkg/mangadex"
+	"godex/internal/mangadex"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
