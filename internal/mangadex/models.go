@@ -195,6 +195,43 @@ func (c *Chapter) GetManga() *Manga {
 	return manga
 }
 
+// GetTitle : Get title of the Manga.
+func (m *Manga) GetTitle() string {
+	if title := m.Attributes.Title.GetLocalString("en"); title != "" {
+		return title
+	}
+	return m.Attributes.AltTitles.GetLocalString("en")
+}
+
+// GetLocalString : Get the localised string for a particular language code.
+// If the required string is not found, it will return the first entry, or an empty string otherwise.
+func (l *LocalisedStrings) GetLocalString(langCode string) string {
+	// If we cannot find the required code, then return first value.
+	if s, ok := l.Values[langCode]; !ok {
+		v := ""
+		for _, value := range l.Values {
+			v = value
+			break
+		}
+		return v
+	} else {
+		return s
+	}
+}
+
+// GetChapterNum : Get the chapter's chapter number.
+func (c *Chapter) GetChapterNum() string {
+	if num := c.Attributes.Chapter; num != nil {
+		return *num
+	}
+	return "-"
+}
+
+// GetDescription : Get description of the Manga.
+func (m *Manga) GetDescription() string {
+	return m.Attributes.Description.GetLocalString("en")
+}
+
 func (m *Manga) GetCover() *CoverArt {
 	var coverArt *CoverArt
 	for _, rel := range m.Relationships {

@@ -31,7 +31,7 @@ func CreateDownloadDir(downloadPath string) error {
 // If the directory already exists, it returns the path to the directory and nil.
 // If there's an error, it returns nil and the error.
 func CreateMangaDir(downloadPath string, manga *mangadex.GodexManga) (string, error) {
-	folderPath := filepath.Join(downloadPath, manga.Manga.Attributes.Title.Values["en"])
+	folderPath := filepath.Join(downloadPath, manga.Manga.GetTitle())
 	err := os.Mkdir(folderPath, 0755)
 	if err != nil {
 		if os.IsExist(err) {
@@ -108,7 +108,7 @@ func CreateCBZ(chapterDir string) error {
 // It returns the path to the directory and nil if the directory is created successfully.
 // If there's an error, it returns an empty string and the error.
 func CreateChapterDir(mangaDir string, chapter *mangadex.Chapter) (string, error) {
-	folderPath := filepath.Join(mangaDir, *chapter.Attributes.Chapter)
+	folderPath := filepath.Join(mangaDir, chapter.GetChapterNum())
 	err := os.Mkdir(folderPath, 0755)
 	if err != nil {
 		return "", fmt.Errorf("error when creating chapter directory: %v", err)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"godex/internal/config"
+	"godex/internal/db"
 	"godex/internal/downloader"
 	"godex/internal/mangadex"
 	"log"
@@ -38,6 +39,15 @@ var (
 				log.Fatalf("Cannot run godex, issue when loading configuration :%v", err)
 			}
 
+			db, err := db.New()
+			if err != nil {
+				log.Fatalf("cannot initialize db: %v", err)
+			}
+
+			if !db.IsHealthy() {
+				log.Fatalf("cannot initialize db: %v", err)
+			}
+
 			// Create a new MangaDex client
 			client := mangadex.NewClient(cfg, httpClient)
 
@@ -54,7 +64,7 @@ var (
 			}
 
 			// Create a new downloader
-			downloader := downloader.NewDownloader(cfg, httpClient)
+			downloader := downloader.NewDownloader(cfg, httpClient, db)
 
 			// Download the manga
 			err = downloader.DownloadManga(ctx, []*mangadex.GodexManga{manga}, client)

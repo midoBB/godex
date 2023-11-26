@@ -16,7 +16,7 @@ import (
 
 const (
 	loginEndpoint    = "https://auth.mangadex.org/realms/mangadex/protocol/openid-connect/token"
-	followedEndpoint = "https://api.mangadex.org/user/follows/manga/feed?translatedLanguage[]=en&includes[]=manga&order[readableAt]=desc&createdAtSince=%v"
+	followedEndpoint = "https://api.mangadex.org/user/follows/manga/feed"
 	getReadEndpoint  = "https://api.mangadex.org/manga/read/?ids[]=%v"
 	setReadEndpoint  = "https://api.mangadex.org/manga/%v/read"
 	chapterEndpoint  = "https://api.mangadex.org/chapter"
@@ -62,14 +62,35 @@ func (c *Client) Login(ctx context.Context) (*LoginResponse, error) {
 
 // GetFollowedMangaFeed retrieves the feed of followed manga from the MangaDex API.
 func (c *Client) GetFollowedMangaFeed(ctx context.Context, lastRanAt time.Time) ([]*GodexManga, error) {
-	endpoint := fmt.Sprintf(followedEndpoint, getMangaDexTimeFormat(lastRanAt))
-	chapterResponse := &ChapterList{}
-	_, err := c.restyClient.R().SetContext(ctx).SetResult(chapterResponse).SetAuthToken(c.authToken).Get(endpoint)
-	if err != nil {
-		return nil, fmt.Errorf("Error getting chapter list: %w", err)
+	var chapters []*Chapter
+	offset := 0
+	limit := 100
+	for {
+		chapterList := &ChapterList{}
+		_, err := c.restyClient.R().SetContext(ctx).SetAuthToken(c.authToken).
+			SetQueryParams(map[string]string{
+				"limit":                fmt.Sprintf("%d", limit),
+				"offset":               fmt.Sprintf("%d", offset),
+				"order[readableAt]":    "desc",
+				"translatedLanguage[]": "en",
+				"includes[]":           "manga",
+				"createdAtSince":       getMangaDexTimeFormat(lastRanAt),
+			}).
+			SetResult(chapterList).
+			Get(followedEndpoint)
+		if err != nil {
+			return nil, err
+		}
+
+		chapters = append(chapters, chapterList.Data...)
+
+		if len(chapters) >= chapterList.Total {
+			break
+		}
+		offset += limit
 	}
 	mangaMap := make(map[string]*GodexManga, 0)
-	for _, chapter := range chapterResponse.Data {
+	for _, chapter := range chapters {
 		mangaID := chapter.GetManga().ID
 		godexManga, ok := mangaMap[mangaID]
 		if !ok {
@@ -92,7 +113,7 @@ func (c *Client) GetFollowedMangaFeed(ctx context.Context, lastRanAt time.Time) 
 	for _, godexManga := range mangaMap {
 		mangaList = append(mangaList, godexManga)
 	}
-	err = c.setReadStatus(ctx, c.authToken, mangaList)
+	err := c.setReadStatus(ctx, c.authToken, mangaList)
 	mangaList = filterAlreadyRead(mangaList)
 	if err != nil {
 		return nil, err

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"godex/internal/db"
 	"godex/internal/downloader/sources"
 	"godex/internal/mangadex"
 	"godex/internal/util"
@@ -17,12 +18,14 @@ import (
 type Downloader struct {
 	httpClient *resty.Client
 	cfg        *mangadex.Config
+	db         db.Database
 }
 
-func NewDownloader(cfg *mangadex.Config, httpClient *resty.Client) *Downloader {
+func NewDownloader(cfg *mangadex.Config, httpClient *resty.Client, db db.Database) *Downloader {
 	return &Downloader{
 		httpClient: httpClient,
 		cfg:        cfg,
+		db:         db,
 	}
 }
 
@@ -46,11 +49,15 @@ func (d *Downloader) DownloadManga(ctx context.Context, mangaList []*mangadex.Go
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
-			log.Printf("Downloading manga: %v", manga.Manga.Attributes.Title.Values["en"])
+			log.Printf("Downloading manga: %v", manga.Manga.GetTitle())
 			mangaDir, err := util.CreateMangaDir(d.cfg.DownloadPath, manga)
-			chaptersToMarkAsRead := make([]string, 0)
 			if err != nil {
 				errs = append(errs, fmt.Sprintf("failed to create manga directory: %v", err))
+				continue
+			}
+			err = d.db.AddManga(ctx, *manga.Manga, mangaDir)
+			if err != nil {
+				errs = append(errs, fmt.Sprintf("failed to create manga: %v", err))
 				continue
 			}
 			if !util.MangaCoverExists(mangaDir) {
@@ -60,18 +67,19 @@ func (d *Downloader) DownloadManga(ctx context.Context, mangaList []*mangadex.Go
 					continue
 				}
 			}
+			chaptersToMarkAsRead := make([]string, 0)
 			for _, chapter := range manga.Chapters {
 				downloaded, err := d.downloadChapter(ctx, mangaDir, chapter)
 				if err != nil {
 					errs = append(errs, fmt.Sprintf("failed to download chapter: %v", err))
 					continue
 				} else {
-					chapterNumber := chapter.Chapter.Attributes.Chapter
+					chapterNumber := chapter.Chapter.GetChapterNum()
 					if downloaded {
-						log.Printf("Downloaded chapter: %v", *chapterNumber)
+						log.Printf("Downloaded chapter: %v", chapterNumber)
 						chaptersToMarkAsRead = append(chaptersToMarkAsRead, chapter.Chapter.ID)
 					} else {
-						log.Printf("Skipped chapter: %v", *chapterNumber)
+						log.Printf("Skipped chapter: %v", chapterNumber)
 					}
 				}
 			}

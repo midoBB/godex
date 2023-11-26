@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"godex/internal/config"
+	"godex/internal/db"
 	"godex/internal/downloader"
 	"godex/internal/mangadex"
 	"log"
@@ -36,6 +37,15 @@ var rootCmd = &cobra.Command{
 			log.Fatalf("Cannot run godex, issue when loading configuration :%v", err)
 		}
 
+		db, err := db.New()
+		if err != nil {
+			log.Fatalf("cannot initialize db: %v", err)
+		}
+
+		if !db.IsHealthy() {
+			log.Fatalf("cannot initialize db: %v", err)
+		}
+
 		// Get the last run time
 		lastRanAt, err := config.LoadTimestamp()
 		if err != nil {
@@ -59,7 +69,7 @@ var rootCmd = &cobra.Command{
 		}
 
 		// Create a new downloader
-		downloader := downloader.NewDownloader(cfg, httpClient)
+		downloader := downloader.NewDownloader(cfg, httpClient, db)
 
 		// Download the manga
 		err = downloader.DownloadManga(ctx, mangaList, client)
@@ -80,6 +90,7 @@ func Execute() {
 	rootCmd.AddCommand(loadCmd)
 	rootCmd.AddCommand(promptCmd)
 	rootCmd.AddCommand(completeCmd)
+	rootCmd.AddCommand(serveCmd)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
