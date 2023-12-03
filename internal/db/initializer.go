@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/glebarez/sqlite"
 	gap "github.com/muesli/go-app-paths"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
