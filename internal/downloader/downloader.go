@@ -100,8 +100,8 @@ func (d *Downloader) DownloadManga(ctx context.Context, mangaList []*mangadex.Go
 // downloadChapter Downloads a chapter from any of the available sources and compresses it into a cbz in the according folder
 // it returns a bool indicating whether the chapter was successfully downloaded and an error indicating if any error happened during download.
 func (d *Downloader) downloadChapter(ctx context.Context, mangaDir string, chapter *mangadex.GodexChapter) (bool, error) {
-	actualChapter := chapter.Chapter
-	if util.CheckChapterAlreadyExists(mangaDir, *actualChapter.Attributes.Chapter) {
+	actualChapter := *chapter.Chapter
+	if util.CheckChapterAlreadyExists(mangaDir, actualChapter.GetChapterNum()) {
 		return false, nil
 	}
 	for _, source := range downloadSources {
@@ -117,7 +117,7 @@ func (d *Downloader) downloadChapter(ctx context.Context, mangaDir string, chapt
 			return true, util.CreateCBZ(chapterDir)
 		}
 	}
-	return false, fmt.Errorf("cannot download chapter %v : unknown source %s", *actualChapter.Attributes.Chapter, *actualChapter.Attributes.ExternalURL)
+	return false, fmt.Errorf("cannot download chapter %v : unknown source %s", actualChapter.GetChapterNum(), util.GetHostname(*actualChapter.Attributes.ExternalURL))
 }
 
 func (d *Downloader) downloadCover(

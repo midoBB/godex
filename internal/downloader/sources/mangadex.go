@@ -21,7 +21,7 @@ type Mangadex struct{}
 // It checks if the ExternalURL attribute of the chapter is nil.
 // If the ExternalURL is nil, the function returns true, indicating that the chapter is valid.
 // Otherwise, it returns false, indicating that the chapter is not valid.
-func (m *Mangadex) IsValid(chapter *mangadex.Chapter) bool {
+func (m *Mangadex) IsValid(chapter mangadex.Chapter) bool {
 	return chapter.Attributes.ExternalURL == nil
 }
 
@@ -30,7 +30,7 @@ func (m *Mangadex) IsValid(chapter *mangadex.Chapter) bool {
 // Then it iterates over each image in the chapter data and downloads it.
 // If an error occurs during the download, it cancels the context, which stops any ongoing downloads.
 // This function returns an error if it fails to fetch the chapter data or if an error occurs during the download.
-func (m *Mangadex) DownloadChapterImages(ctx context.Context, httpClient *resty.Client, chapterDir string, chapter *mangadex.Chapter) error {
+func (m *Mangadex) DownloadChapterImages(ctx context.Context, httpClient *resty.Client, chapterDir string, chapter mangadex.Chapter) error {
 	endpoint := fmt.Sprintf(downloadEndpoint, chapter.ID)
 	chapterData := &mangadex.MDHomeServerResponse{}
 	_, err := httpClient.R().SetContext(ctx).SetResult(chapterData).Get(endpoint)

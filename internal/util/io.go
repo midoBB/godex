@@ -6,6 +6,7 @@ import (
 	"godex/internal/mangadex"
 	"io"
 	"log"
+	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
@@ -107,7 +108,7 @@ func CreateCBZ(chapterDir string) error {
 // CreateChapterDir creates a directory for the chapter.
 // It returns the path to the directory and nil if the directory is created successfully.
 // If there's an error, it returns an empty string and the error.
-func CreateChapterDir(mangaDir string, chapter *mangadex.Chapter) (string, error) {
+func CreateChapterDir(mangaDir string, chapter mangadex.Chapter) (string, error) {
 	folderPath := filepath.Join(mangaDir, chapter.GetChapterNum())
 	err := os.Mkdir(folderPath, 0755)
 	if err != nil {
@@ -146,4 +147,9 @@ func CreateFileAndDir(filename string) error {
 
 func MangaCoverExists(mangaDir string) bool {
 	return CheckFileExists(filepath.Join(mangaDir, "cover.jpg"))
+}
+
+func GetHostname(rawUrl string) string {
+	parsedUrl, _ := url.Parse(rawUrl)
+	return parsedUrl.Hostname()
 }

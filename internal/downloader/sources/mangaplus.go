@@ -46,14 +46,14 @@ type Page struct {
 type MangaPlus struct{}
 
 // IsValid checks if the provided URL is valid for mangaplus.
-func (p *MangaPlus) IsValid(chapter *mangadex.Chapter) bool {
+func (p *MangaPlus) IsValid(chapter mangadex.Chapter) bool {
 	return chapter.Attributes.ExternalURL != nil &&
 		strings.Contains(*chapter.Attributes.ExternalURL, "mangaplus")
 }
 
 // DownloadChapterImages downloads all images of a chapter and saves them in a directory.
 // It returns the path to the directory where the images are saved.
-func (p *MangaPlus) DownloadChapterImages(ctx context.Context, httpClient *resty.Client, chapterDir string, chapter *mangadex.Chapter) error {
+func (p *MangaPlus) DownloadChapterImages(ctx context.Context, httpClient *resty.Client, chapterDir string, chapter mangadex.Chapter) error {
 	externalUrl := chapter.Attributes.ExternalURL
 	chapterId := getChapterId(*externalUrl)
 	pages, err := getPageList(ctx, httpClient, chapterId)
