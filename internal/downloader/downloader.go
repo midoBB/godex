@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/go-resty/resty/v2"
+	"gorm.io/gorm"
 )
 
 type Downloader struct {
@@ -60,13 +61,13 @@ func (d *Downloader) DownloadManga(ctx context.Context, mangaList []*mangadex.Go
 				errs = append(errs, fmt.Sprintf("failed to create manga: %v", err))
 				continue
 			}
-			if !util.MangaCoverExists(mangaDir) {
-				err := d.downloadCover(ctx, mangadexClient, mangaDir, manga)
-				if err != nil {
-					errs = append(errs, fmt.Sprintf("failed to download manga cover: %v", err))
-					continue
-				}
+			/* if !util.MangaCoverExists(mangaDir) { */
+			err = d.downloadCover(ctx, mangadexClient, mangaDir, manga)
+			if err != nil {
+				errs = append(errs, fmt.Sprintf("failed to download manga cover: %v", err))
+				continue
 			}
+			/* } */
 			chaptersToMarkAsRead := make([]string, 0)
 			for _, chapter := range manga.Chapters {
 				downloaded, err := d.downloadChapter(ctx, mangaDir, chapter)
@@ -126,14 +127,32 @@ func (d *Downloader) downloadCover(
 	mangaDir string,
 	manga *mangadex.GodexManga,
 ) error {
-	coverUrl, err := mangadexClient.GetMangaCover(ctx, manga.Manga.ID)
+	cover, err := mangadexClient.GetMangaCover(ctx, manga.Manga.ID)
 	if err != nil {
 		return err
 	}
+	dbCover, err := d.db.GetCover(ctx, manga.Manga.ID)
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err
+	}
+	if dbCover != nil && dbCover.Filename == cover.Attributes.FileName && util.MangaCoverExists(mangaDir) {
+		return nil
+	}
+	coverUrl := mangadex.GetMangaCoverUrl(manga.Manga.ID, *cover)
 	imagePath := filepath.Join(mangaDir, "cover.jpg")
+	if util.MangaCoverExists(mangaDir) {
+		err := util.DeleteOldCover(imagePath)
+		if err != nil {
+			return err
+		}
+	}
 	_, err = d.httpClient.R().
 		SetContext(ctx).
 		SetOutput(imagePath).
 		Get(coverUrl)
+	if err != nil {
+		return err
+	}
+	err = d.db.SaveCover(ctx, dbCover, manga.Manga.ID, cover)
 	return err
 }

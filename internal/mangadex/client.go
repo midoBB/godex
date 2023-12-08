@@ -122,14 +122,18 @@ func (c *Client) GetFollowedMangaFeed(ctx context.Context, lastRanAt time.Time) 
 	return mangaList, nil
 }
 
-func (c *Client) GetMangaCover(ctx context.Context, mangaID string) (string, error) {
+func (c *Client) GetMangaCover(ctx context.Context, mangaID string) (*CoverArt, error) {
 	mangaResp := &MangaResponse{}
 	_, err := c.restyClient.R().
 		SetContext(ctx).SetResult(mangaResp).SetAuthToken(c.authToken).Get(fmt.Sprintf(mangaEndpoint, mangaID))
 	if err != nil {
-		return "", fmt.Errorf("can't get manga cover: %v", err)
+		return nil, fmt.Errorf("can't get manga cover: %v", err)
 	}
-	return fmt.Sprintf(coverEndpoint, mangaID, mangaResp.Data.GetCover().Attributes.FileName), nil
+	return mangaResp.Data.GetCover(), nil
+}
+
+func GetMangaCoverUrl(mangaID string, cover CoverArt) string {
+	return fmt.Sprintf(coverEndpoint, mangaID, cover.Attributes.FileName)
 }
 
 // filterAlreadyRead Filters out any chapters that are marked as read to not redownload them.

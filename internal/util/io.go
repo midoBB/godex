@@ -153,3 +153,7 @@ func GetHostname(rawUrl string) string {
 	parsedUrl, _ := url.Parse(rawUrl)
 	return parsedUrl.Hostname()
 }
+
+func DeleteOldCover(imagePath string) error {
+	return os.Remove(imagePath)
+}

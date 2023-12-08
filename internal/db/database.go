@@ -14,6 +14,8 @@ import (
 type Database interface {
 	IsHealthy() bool
 	AddManga(ctx context.Context, newManga mangadex.Manga, mangaDir string) error
+	GetCover(ctx context.Context, mangaID string) (*CoverArt, error)
+	SaveCover(ctx context.Context, dbCover *CoverArt, mangaID string, newCover *mangadex.CoverArt) error
 }
 
 type database struct {
@@ -56,11 +58,34 @@ func (s *database) IsHealthy() bool {
 }
 
 func (s *database) AddManga(ctx context.Context, newManga mangadex.Manga, mangaDir string) error {
-	dbManga := manga{
+	dbManga := Manga{
 		MangadexId:  newManga.ID,
 		Title:       newManga.GetTitle(),
 		Description: newManga.Attributes.Description.Values["en"],
 		MangaPath:   mangaDir,
 	}
-	return s.db.FirstOrCreate(&dbManga, manga{MangadexId: newManga.ID}).Error
+	return s.db.FirstOrCreate(&dbManga, Manga{MangadexId: newManga.ID}).Error
+}
+
+func (s *database) GetCover(ctx context.Context, mangaID string) (*CoverArt, error) {
+	var cover CoverArt
+	err := s.db.Where("manga_id = ?", mangaID).First(&cover).Error
+	if err != nil {
+		return nil, err
+	}
+	return &cover, nil
+}
+
+func (s *database) SaveCover(ctx context.Context, dbCover *CoverArt, mangaID string, newCover *mangadex.CoverArt) error {
+	if dbCover == nil {
+		dbCover = &CoverArt{
+			MangadexId: newCover.ID,
+			MangaId:    mangaID,
+			Filename:   newCover.Attributes.FileName,
+		}
+	}
+	if err := s.db.Save(dbCover).Error; err != nil {
+		return err
+	}
+	return s.db.Model(&Manga{}).Where("mangadex_id = ?", mangaID).Update("cover_art_id", dbCover.ID).Error
 }

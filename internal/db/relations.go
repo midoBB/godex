@@ -2,7 +2,7 @@ package db
 
 import "time"
 
-type manga struct {
+type Manga struct {
 	ID          uint `gorm:"primarykey"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
@@ -10,22 +10,22 @@ type manga struct {
 	Title       string
 	Description string
 	MangaPath   string
-	CoverArt    *coverArt
+	CoverArt    *CoverArt
 	CoverArtId  *string
-	Chapters    []chapter
+	Chapters    []Chapter
 }
 
-type chapter struct {
-	ID         uint `gorm:"primarykey"`
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
-	MangadexId string `gorm:"uniqueIndex"`
-	Title      string
-	Chapter    string
-	MangaId    string
+type Chapter struct {
+	ID            uint `gorm:"primarykey"`
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	MangadexId    string `gorm:"uniqueIndex"`
+	Title         string
+	ChapterNumber string
+	MangaId       string
 }
 
-type coverArt struct {
+type CoverArt struct {
 	ID         uint `gorm:"primarykey"`
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
