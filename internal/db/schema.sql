@@ -1,8 +1,7 @@
 CREATE TABLE mangas (
-    id INTEGER PRIMARY KEY,
+    mangadex_id TEXT PRIMARY KEY,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    mangadex_id TEXT UNIQUE,
     title TEXT,
     description TEXT,
     manga_path TEXT,
@@ -11,11 +10,22 @@ CREATE TABLE mangas (
 );
 
 CREATE TABLE cover_arts (
-    id INTEGER PRIMARY KEY,
+    mangadex_id TEXT PRIMARY KEY,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    mangadex_id TEXT UNIQUE,
     filename TEXT,
-    manga_id INTEGER,
+    manga_id TEXT,
+    FOREIGN KEY (manga_id) REFERENCES mangas (id)
+);
+
+CREATE TABLE chapters (
+    mangadex_id TEXT PRIMARY KEY,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    title TEXT,
+    chapter_number TEXT,
+    manga_id TEXT,
+    is_read INTEGER DEFAULT 0,
+    read_at DATETIME,
     FOREIGN KEY (manga_id) REFERENCES mangas (id)
 );

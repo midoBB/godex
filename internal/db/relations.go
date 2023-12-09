@@ -3,22 +3,40 @@ package db
 import "time"
 
 type Manga struct {
-	ID          uint `gorm:"primarykey"`
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	MangadexId  string `gorm:"uniqueIndex"`
-	Title       string
-	Description string
-	MangaPath   string
-	CoverArt    *CoverArt
-	CoverArtId  *string
+	MangadexId   string `gorm:"primaryKey"`
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	Title        string
+	Description  string
+	MangaPath    string
+	CoverArt     *CoverArt
+	CoverArtId   *string
+	Chapters     []Chapter
+	ChapterCount int `gorm:"-:all"`
+}
+
+type Chapter struct {
+	MangadexId    string `gorm:"primaryKey"`
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	Title         string
+	ChapterNumber string
+	MangaId       string
+	ReadAt        *time.Time
+	IsRead        bool
 }
 
 type CoverArt struct {
-	ID         uint `gorm:"primarykey"`
+	MangadexId string `gorm:"primaryKey"`
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
-	MangadexId string `gorm:"uniqueIndex"`
 	MangaId    string
 	Filename   string
+}
+
+type Page[T any] struct {
+	CurrentPage   int
+	NumberOfPages int
+	TotalNumber   int
+	Data          []T
 }

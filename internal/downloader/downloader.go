@@ -4,14 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
-	"path/filepath"
-	"strings"
-
 	"godex/internal/db"
 	"godex/internal/downloader/sources"
 	"godex/internal/mangadex"
 	"godex/internal/util"
+	"log"
+	"path/filepath"
+	"strings"
 
 	"github.com/go-resty/resty/v2"
 	"gorm.io/gorm"
@@ -71,7 +70,7 @@ func (d *Downloader) DownloadManga(ctx context.Context, mangaList []*mangadex.Go
 			/* } */
 			chaptersToMarkAsRead := make([]string, 0)
 			for _, chapter := range manga.Chapters {
-				downloaded, err := d.downloadChapter(ctx, mangaDir, chapter)
+				downloaded, err := d.downloadChapter(ctx, mangaDir, chapter, *manga)
 				if err != nil {
 					errs = append(errs, fmt.Sprintf("failed to download chapter: %v", err))
 					continue
@@ -101,7 +100,7 @@ func (d *Downloader) DownloadManga(ctx context.Context, mangaList []*mangadex.Go
 
 // downloadChapter Downloads a chapter from any of the available sources and compresses it into a cbz in the according folder
 // it returns a bool indicating whether the chapter was successfully downloaded and an error indicating if any error happened during download.
-func (d *Downloader) downloadChapter(ctx context.Context, mangaDir string, chapter *mangadex.GodexChapter) (bool, error) {
+func (d *Downloader) downloadChapter(ctx context.Context, mangaDir string, chapter *mangadex.GodexChapter, manga mangadex.GodexManga) (bool, error) {
 	actualChapter := *chapter.Chapter
 	if util.CheckChapterAlreadyExists(mangaDir, actualChapter.GetChapterNum()) {
 		return false, nil
@@ -113,6 +112,10 @@ func (d *Downloader) downloadChapter(ctx context.Context, mangaDir string, chapt
 				return false, err
 			}
 			err = source.DownloadChapterImages(ctx, d.httpClient, chapterDir, actualChapter)
+			if err != nil {
+				return false, err
+			}
+			err = d.db.AddMangaChapter(ctx, actualChapter, manga.Manga.ID)
 			if err != nil {
 				return false, err
 			}
