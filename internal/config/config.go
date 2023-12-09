@@ -1,10 +1,11 @@
 package config
 
 import (
-	"godex/internal/mangadex"
-	"godex/internal/util"
 	"log"
 	"os"
+
+	"godex/internal/mangadex"
+	"godex/internal/util"
 
 	gap "github.com/muesli/go-app-paths"
 	"github.com/spf13/viper"

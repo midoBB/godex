@@ -2,10 +2,11 @@ package config
 
 import (
 	"fmt"
-	"godex/internal/util"
 	"log"
 	"os"
 	"time"
+
+	"godex/internal/util"
 
 	gap "github.com/muesli/go-app-paths"
 	"github.com/spf13/viper"

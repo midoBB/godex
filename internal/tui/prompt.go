@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+
 	"godex/internal/mangadex"
 
 	"github.com/charmbracelet/bubbles/textinput"

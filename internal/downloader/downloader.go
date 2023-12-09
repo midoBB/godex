@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"path/filepath"
+	"strings"
+
 	"godex/internal/db"
 	"godex/internal/downloader/sources"
 	"godex/internal/mangadex"
 	"godex/internal/util"
-	"log"
-	"path/filepath"
-	"strings"
 
 	"github.com/go-resty/resty/v2"
 	"gorm.io/gorm"

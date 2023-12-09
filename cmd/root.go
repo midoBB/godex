@@ -3,12 +3,13 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"log"
+	"os"
+
 	"godex/internal/config"
 	"godex/internal/db"
 	"godex/internal/downloader"
 	"godex/internal/mangadex"
-	"log"
-	"os"
 
 	"github.com/go-resty/resty/v2"
 	"github.com/spf13/cobra"

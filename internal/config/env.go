@@ -1,8 +1,9 @@
 package config
 
 import (
-	"godex/internal/mangadex"
 	"log"
+
+	"godex/internal/mangadex"
 
 	"github.com/spf13/viper"
 )

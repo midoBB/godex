@@ -2,9 +2,10 @@ package server
 
 import (
 	"fmt"
-	"godex/internal/db"
 	"net/http"
 	"time"
+
+	"godex/internal/db"
 )
 
 type Server struct {

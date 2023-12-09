@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"godex/internal/config"
 	"log"
+
+	"godex/internal/config"
 
 	"github.com/spf13/cobra"
 )

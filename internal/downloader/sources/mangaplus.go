@@ -5,13 +5,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"godex/internal/mangadex"
 	"io"
 	"net/http"
 	"os"
 	"path"
 	"strconv"
 	"strings"
+
+	"godex/internal/mangadex"
 
 	"github.com/go-resty/resty/v2"
 )
@@ -122,7 +123,7 @@ func downloadImages(ctx context.Context, chapterDir string, pages []Page) error 
 				return
 			}
 
-			err = os.WriteFile(fmt.Sprintf("%s/%d.jpg", chapterDir, i), imgData, 0644)
+			err = os.WriteFile(fmt.Sprintf("%s/%d.jpg", chapterDir, i), imgData, 0o644)
 			if err != nil {
 				// Handle error.
 				return

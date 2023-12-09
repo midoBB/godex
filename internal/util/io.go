@@ -3,13 +3,14 @@ package util
 import (
 	"archive/zip"
 	"fmt"
-	"godex/internal/mangadex"
 	"io"
 	"log"
 	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
+
+	"godex/internal/mangadex"
 )
 
 // CreateDownloadDir creates a directory for the download path.
@@ -17,7 +18,7 @@ import (
 // If the directory already exists, it returns nil.
 // If there's an error and it's not because the directory already exists, it returns the error.
 func CreateDownloadDir(downloadPath string) error {
-	err := os.Mkdir(downloadPath, 0755)
+	err := os.Mkdir(downloadPath, 0o755)
 	if err == nil {
 		log.Printf("Successfully created download path for manga\n")
 	}
@@ -33,7 +34,7 @@ func CreateDownloadDir(downloadPath string) error {
 // If there's an error, it returns nil and the error.
 func CreateMangaDir(downloadPath string, manga *mangadex.GodexManga) (string, error) {
 	folderPath := filepath.Join(downloadPath, manga.Manga.GetTitle())
-	err := os.Mkdir(folderPath, 0755)
+	err := os.Mkdir(folderPath, 0o755)
 	if err != nil {
 		if os.IsExist(err) {
 			return folderPath, nil
@@ -110,7 +111,7 @@ func CreateCBZ(chapterDir string) error {
 // If there's an error, it returns an empty string and the error.
 func CreateChapterDir(mangaDir string, chapter mangadex.Chapter) (string, error) {
 	folderPath := filepath.Join(mangaDir, chapter.GetChapterNum())
-	err := os.Mkdir(folderPath, 0755)
+	err := os.Mkdir(folderPath, 0o755)
 	if err != nil {
 		return "", fmt.Errorf("error when creating chapter directory: %v", err)
 	}
@@ -130,7 +131,7 @@ func CheckFileExists(path string) bool {
 func CreateFileAndDir(filename string) error {
 	// Create the parent directory if it doesn't exist
 	dir := filepath.Dir(filename)
-	err := os.MkdirAll(dir, 0755)
+	err := os.MkdirAll(dir, 0o755)
 	if err != nil {
 		return err
 	}

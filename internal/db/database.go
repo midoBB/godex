@@ -2,9 +2,10 @@ package db
 
 import (
 	"context"
+	"time"
+
 	"godex/internal/mangadex"
 	"godex/internal/util"
-	"time"
 
 	"github.com/glebarez/sqlite"
 	gap "github.com/muesli/go-app-paths"

@@ -3,10 +3,11 @@ package sources
 import (
 	"context"
 	"fmt"
-	"godex/internal/mangadex"
 	"os"
 	"path/filepath"
 	"strconv"
+
+	"godex/internal/mangadex"
 
 	"github.com/go-resty/resty/v2"
 )

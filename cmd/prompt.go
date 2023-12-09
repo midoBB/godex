@@ -1,9 +1,10 @@
 package cmd
 
 import (
+	"log"
+
 	"godex/internal/config"
 	"godex/internal/tui"
-	"log"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"

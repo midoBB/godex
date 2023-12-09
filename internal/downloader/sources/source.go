@@ -2,6 +2,7 @@ package sources
 
 import (
 	"context"
+
 	"godex/internal/mangadex"
 
 	"github.com/go-resty/resty/v2"
